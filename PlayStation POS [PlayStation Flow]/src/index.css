@@ -1,0 +1,127 @@
+@import "tailwindcss";
+
+@variant dark (&:where(.dark, .dark *));
+
+@media print {
+  /* Hide EVERYTHING by default */
+  body * {
+    visibility: hidden;
+  }
+  
+  /* Show ONLY the invoice and its children */
+  #invoice-print-area, #invoice-print-area * {
+    visibility: visible;
+  }
+  
+  /* Position the invoice at the very top of the printed page */
+  #invoice-print-area {
+    visibility: visible;
+    display: block !important;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: auto;
+    margin: 0;
+    padding: 20px;
+    background: white !important;
+    color: black !important;
+    z-index: 9999;
+    box-shadow: none !important;
+  }
+
+  /* Force light background for printing */
+  html, body {
+    background: white !important;
+    color: black !important;
+  }
+
+  /* Enhanced print styling for better visual hierarchy */
+  #invoice-print-area h1 {
+    font-size: 28px !important;
+    line-height: 1.1 !important;
+  }
+
+  #invoice-print-area .bg-gradient-to-r {
+    background: linear-gradient(90deg, #2563eb, #9333ea, #2563eb) !important;
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  #invoice-print-area .text-blue-800 {
+    color: #1e3a8a !important;
+  }
+
+  #invoice-print-area .text-blue-700 {
+    color: #2563eb !important;
+  }
+
+  #invoice-print-area .bg-blue-50 {
+    background-color: #eff6ff !important;
+    border-color: #bfdbfe !important;
+  }
+
+  #invoice-print-area .bg-slate-50 {
+    background-color: #f8fafc !important;
+    border-color: #e2e8f0 !important;
+  }
+
+  #invoice-print-area .font-extrabold {
+    font-weight: 800 !important;
+  }
+
+  #invoice-print-area .font-black {
+    font-weight: 900 !important;
+  }
+
+  /* Ensure borders print properly */
+  #invoice-print-area .border-slate-800 {
+    border-color: #1f2937 !important;
+  }
+
+  #invoice-print-area .border-slate-300 {
+    border-color: #cbd5e1 !important;
+  }
+
+  /* Improve spacing for print */
+  #invoice-print-area .mb-6 {
+    margin-bottom: 1.5rem !important;
+  }
+
+  #invoice-print-area .mb-4 {
+    margin-bottom: 1rem !important;
+  }
+
+  #invoice-print-area .mb-3 {
+    margin-bottom: 0.75rem !important;
+  }
+
+  #invoice-print-area .mb-2 {
+    margin-bottom: 0.5rem !important;
+  }
+
+  #invoice-print-area .space-y-4 > * + * {
+    margin-top: 1rem !important;
+  }
+
+  #invoice-print-area .space-y-3 > * + * {
+    margin-top: 0.75rem !important;
+  }
+
+  #invoice-print-area .space-y-2 > * + * {
+    margin-top: 0.5rem !important;
+  }
+
+  #invoice-print-area .space-y-1 > * + * {
+    margin-top: 0.25rem !important;
+  }
+
+  /* Ensure proper font rendering */
+  #invoice-print-area {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+  }
+
+  #invoice-print-area .font-mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+  }
+}
