@@ -207,7 +207,7 @@ export default function Dashboard() {
                     <p className="text-slate-500 dark:text-slate-400 mb-6">الجهاز متاح الآن وجاهز للعب.</p>
                     <button 
                       onClick={() => setStartingDevice(device.id)}
-                      className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white py-3 rounded-xl font-medium transition-colors shadow-lg shadow-blue-500/20"
+                      className="w-full bg-linear-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white py-3 rounded-xl font-medium transition-colors shadow-lg shadow-blue-500/20"
                     >
                       بدء جلسة جديدة
                     </button>
@@ -222,7 +222,7 @@ export default function Dashboard() {
       {/* Start Session Modal */}
       {startingDevice && (
         <div className="fixed inset-0 bg-slate-900/60 dark:bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 w-full max-w-md shadow-2xl">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 w-full md:w-[600px] shadow-2xl">
             <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-6">بدء جلسة جديدة</h3>
             
             <div className="space-y-5">
@@ -269,7 +269,7 @@ export default function Dashboard() {
               </button>
               <button 
                 onClick={handleStartSession}
-                className="flex-1 py-3 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-xl font-medium transition-colors shadow-lg shadow-blue-500/20"
+                className="flex-1 py-3 bg-linear-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-xl font-medium transition-colors shadow-lg shadow-blue-500/20"
               >
                 بدء اللعب
               </button>
@@ -281,7 +281,7 @@ export default function Dashboard() {
       {/* Add Order Modal */}
       {orderingSession && (
         <div className="fixed inset-0 bg-slate-900/60 dark:bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 w-full max-w-md shadow-2xl">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 w-full md:w-[600px] shadow-2xl">
             <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-6">إضافة طلب للكافيه</h3>
             
             <div className="space-y-5">
@@ -321,7 +321,7 @@ export default function Dashboard() {
               <button 
                 onClick={handleAddOrder}
                 disabled={!selectedProduct}
-                className="flex-1 py-3 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 disabled:opacity-50 text-white rounded-xl font-medium transition-colors"
+                className="flex-1 py-3 bg-linear-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 disabled:opacity-50 text-white rounded-xl font-medium transition-colors"
               >
                 إضافة الطلب
               </button>
@@ -383,7 +383,7 @@ export default function Dashboard() {
 
         return (
           <>
-            <div className="fixed inset-0 bg-slate-900/60 dark:bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
+            <div className="fixed inset-0 bg-slate-900/60 dark:bg-black/60 backdrop-blur-sm flex items-center justify-center z-60 p-4">
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 w-full max-w-sm shadow-2xl text-center">
                 <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-white dark:border-slate-800 shadow-lg">
                   <Printer className="w-10 h-10 text-emerald-600 dark:text-emerald-400" />
@@ -394,7 +394,7 @@ export default function Dashboard() {
                 <div className="flex flex-col gap-3">
                   <button 
                     onClick={handlePrint}
-                    className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-bold text-lg shadow-lg shadow-blue-500/25 transition-all transform active:scale-95 flex items-center justify-center gap-3"
+                    className="w-full py-4 bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-bold text-lg shadow-lg shadow-blue-500/25 transition-all transform active:scale-95 flex items-center justify-center gap-3"
                   >
                     <Printer className="w-6 h-6" /> طباعة الفاتورة
                   </button>
