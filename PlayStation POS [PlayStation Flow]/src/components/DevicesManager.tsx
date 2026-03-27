@@ -45,7 +45,7 @@ export default function DevicesManager() {
         </div>
         <button 
           onClick={() => { setIsEditing('new'); setFormData({ type: 'PS5', hourlyRateSingle: 20, hourlyRateMulti: 30 }); }}
-          className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors shadow-sm"
+          className="bg-linear-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors shadow-sm"
         >
           <Plus className="w-5 h-5" />
           إضافة جهاز جديد
@@ -129,7 +129,7 @@ export default function DevicesManager() {
             </button>
             <button 
               onClick={handleSave}
-              className="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-lg transition-colors shadow-sm"
+              className="px-6 py-2 bg-linear-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-lg transition-colors shadow-sm"
             >
               حفظ
             </button>
