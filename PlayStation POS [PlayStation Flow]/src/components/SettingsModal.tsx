@@ -49,7 +49,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl shadow-2xl border border-blue-100 dark:border-slate-800 overflow-hidden animate-in zoom-in-95 duration-200">
+      <div className="bg-white dark:bg-slate-900 w-full  md:w-[600px] rounded-2xl shadow-2xl border border-blue-100 dark:border-slate-800 overflow-hidden animate-in zoom-in-95 duration-200">
         <div className="p-6 border-b border-blue-100 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-900/50">
           <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
             إعدادات المحل
@@ -104,7 +104,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           <div className="pt-4 space-y-3">
             <button
               type="submit"
-              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-500/25 transition-all transform active:scale-95"
+              className="w-full flex items-center justify-center gap-2 bg-linear-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-500/25 transition-all transform active:scale-95"
             >
               <Save className="w-5 h-5" />
               حفظ الإعدادات

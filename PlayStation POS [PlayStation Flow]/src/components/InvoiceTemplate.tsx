@@ -23,7 +23,7 @@ export default function InvoiceTemplate({ session, device, settings, products }:
       {/* Header with enhanced branding */}
       <div className="text-center mb-6">
         {/* Decorative header border */}
-        <div className="w-full h-1 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 mb-4 rounded-full"></div>
+        <div className="w-full h-1 bg-linear-to-r from-blue-600 via-purple-600 to-blue-600 mb-4 rounded-full"></div>
         
         {/* Shop Name with enhanced typography */}
         <div className="mb-2">
@@ -178,7 +178,7 @@ export default function InvoiceTemplate({ session, device, settings, products }:
         </div>
 
         {/* Footer Border */}
-        <div className="w-full h-px bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 my-4"></div>
+        <div className="w-full h-px bg-linear-to-r from-blue-600 via-purple-600 to-blue-600 my-4"></div>
       </div>
     </div>
   );

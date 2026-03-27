@@ -61,7 +61,7 @@ export default function InventoryManager() {
         </div>
         <button 
           onClick={() => { setIsEditing('new'); setFormData({ category: 'drink', price: 10, stock: 50 }); }}
-          className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors shadow-sm"
+          className="bg-linear-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors shadow-sm"
         >
           <Plus className="w-5 h-5" />
           إضافة منتج جديد
@@ -125,7 +125,7 @@ export default function InventoryManager() {
             </button>
             <button 
               onClick={handleSave}
-              className="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-lg transition-colors shadow-sm"
+              className="px-6 py-2 bg-linear-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-lg transition-colors shadow-sm"
             >
               حفظ
             </button>
