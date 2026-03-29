@@ -12,7 +12,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "electron:dev": "concurrently \"vite\" \"wait-on http://localhost:8080 && cross-env NODE_ENV=development electron .\"",
-    "electron:build": "vite build && electron-builder"
+    "electron:build": "npm run build && electron-builder"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
