@@ -1,0 +1,21 @@
+{
+  "appId": "com.fleetflow.pos",
+  "productName": "Fleet Flow",
+  "directories": {
+    "output": "release"
+  },
+  "files": [
+    "dist/**/*",
+    "electron/**/*",
+    "fleet-flow.ico"
+  ],
+  "win": {
+    "target": ["nsis"],
+    "icon": "fleet-flow.ico"
+  },
+  "nsis": {
+    "oneClick": false,
+    "perMachine": false,
+    "allowToChangeInstallationDirectory": true
+  }
+}
