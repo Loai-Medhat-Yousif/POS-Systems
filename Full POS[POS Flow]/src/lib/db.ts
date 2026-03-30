@@ -70,7 +70,7 @@ export const formatDate = (dateString: string) => {
       hour: '2-digit',
       minute: '2-digit',
       hour12: true,
-      calendar: 'gregory'
+      calendar: 'gregory',
     });
   } catch (e) {
     return dateString;
@@ -81,18 +81,235 @@ const uuid = () => {
   try {
     return crypto.randomUUID();
   } catch (e) {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-      var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+      var r = (Math.random() * 16) | 0,
+        v = c == 'x' ? r : (r & 0x3) | 0x8;
       return v.toString(16);
     });
   }
 };
 
+// ─── In-memory mock for browser / dev mode (no Electron) ─────────────────────
+const memDB = {
+  categories: [] as Category[],
+  products: [] as Product[],
+  sales: [] as Sale[],
+  saleItems: [] as SaleItem[],
+  purchaseInvoices: [] as PurchaseInvoice[],
+  purchaseItems: [] as PurchaseItem[],
+  settings: {} as Record<string, string>,
+};
+
+const mockQuery = async (sql: string, params: any[] = []): Promise<any> => {
+  const s = sql.trim().toUpperCase().replace(/\s+/g, ' ');
+
+  // ── Categories ──────────────────────────────────────────────
+  if (s.startsWith('SELECT * FROM CATEGORIES'))
+    return [...memDB.categories].sort((a, b) => a.name.localeCompare(b.name));
+
+  if (s.startsWith('INSERT INTO CATEGORIES')) {
+    const [id, name, color] = params;
+    memDB.categories.push({ id, name, color });
+    return { changes: 1 };
+  }
+  if (s.startsWith('UPDATE CATEGORIES')) {
+    const [name, color, id] = params;
+    const c = memDB.categories.find((x) => x.id === id);
+    if (c) { c.name = name; c.color = color; }
+    return { changes: 1 };
+  }
+  if (s.startsWith('DELETE FROM CATEGORIES')) {
+    memDB.categories = memDB.categories.filter((x) => x.id !== params[0]);
+    return { changes: 1 };
+  }
+
+  // ── Products ────────────────────────────────────────────────
+  if (s.startsWith('SELECT * FROM PRODUCTS ORDER BY NAME'))
+    return [...memDB.products].sort((a, b) => a.name.localeCompare(b.name));
+
+  if (s.startsWith('SELECT * FROM PRODUCTS WHERE BARCODE')) {
+    return memDB.products.filter((x) => x.barcode === params[0]);
+  }
+  if (s.startsWith('INSERT INTO PRODUCTS')) {
+    const [id, name, price, barcode, stock, category_id] = params;
+    memDB.products.push({ id, name, price, barcode, stock, category_id });
+    return { changes: 1 };
+  }
+  if (s.startsWith('UPDATE PRODUCTS SET NAME')) {
+    const [name, price, barcode, stock, category_id, id] = params;
+    const p = memDB.products.find((x) => x.id === id);
+    if (p) Object.assign(p, { name, price, barcode, stock, category_id });
+    return { changes: 1 };
+  }
+  if (s.startsWith('UPDATE PRODUCTS SET STOCK = MAX(0, STOCK +')) {
+    const [delta, id] = params;
+    const p = memDB.products.find((x) => x.id === id);
+    if (p) p.stock = Math.max(0, p.stock + delta);
+    return { changes: 1 };
+  }
+  if (s.startsWith('UPDATE PRODUCTS SET STOCK = MAX(0, STOCK -')) {
+    const [delta, id] = params;
+    const p = memDB.products.find((x) => x.id === id);
+    if (p) p.stock = Math.max(0, p.stock - delta);
+    return { changes: 1 };
+  }
+  if (s.startsWith('UPDATE PRODUCTS SET STOCK = STOCK +')) {
+    const [delta, id] = params;
+    const p = memDB.products.find((x) => x.id === id);
+    if (p) p.stock = p.stock + delta;
+    return { changes: 1 };
+  }
+  if (s.startsWith('DELETE FROM PRODUCTS')) {
+    memDB.products = memDB.products.filter((x) => x.id !== params[0]);
+    return { changes: 1 };
+  }
+
+  // ── Sales ───────────────────────────────────────────────────
+  if (s.startsWith('SELECT * FROM SALES'))
+    return [...memDB.sales].sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+
+  if (s.startsWith('SELECT * FROM SALE_ITEMS WHERE SALE_ID'))
+    return memDB.saleItems.filter((x) => x.sale_id === params[0]);
+
+  if (s.startsWith('INSERT INTO SALES')) {
+    const [id, invoice_number, total] = params;
+    memDB.sales.push({ id, invoice_number, total, created_at: new Date().toISOString() });
+    return { changes: 1 };
+  }
+  if (s.startsWith('INSERT INTO SALE_ITEMS')) {
+    const [id, sale_id, product_id, name, price, quantity] = params;
+    memDB.saleItems.push({ id, sale_id, product_id, name, price, quantity });
+    return { changes: 1 };
+  }
+  if (s.startsWith('DELETE FROM SALE_ITEMS WHERE SALE_ID')) {
+    memDB.saleItems = memDB.saleItems.filter((x) => x.sale_id !== params[0]);
+    return { changes: 1 };
+  }
+  if (s.startsWith('DELETE FROM SALES WHERE ID')) {
+    memDB.sales = memDB.sales.filter((x) => x.id !== params[0]);
+    return { changes: 1 };
+  }
+
+  // ── Purchase Invoices ───────────────────────────────────────
+  if (s.startsWith('SELECT * FROM PURCHASE_INVOICES'))
+    return [...memDB.purchaseInvoices].sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+
+  if (s.startsWith('SELECT * FROM PURCHASE_ITEMS WHERE INVOICE_ID'))
+    return memDB.purchaseItems.filter((x) => x.invoice_id === params[0]);
+
+  if (s.startsWith('INSERT INTO PURCHASE_INVOICES')) {
+    const [id, supplier, invoice_ref, total] = params;
+    memDB.purchaseInvoices.push({ id, supplier, invoice_ref, total, created_at: new Date().toISOString() });
+    return { changes: 1 };
+  }
+  if (s.startsWith('INSERT INTO PURCHASE_ITEMS')) {
+    const [id, invoice_id, product_id, product_name, quantity, cost] = params;
+    memDB.purchaseItems.push({ id, invoice_id, product_id, product_name, quantity, cost });
+    return { changes: 1 };
+  }
+  if (s.startsWith('DELETE FROM PURCHASE_ITEMS WHERE INVOICE_ID')) {
+    memDB.purchaseItems = memDB.purchaseItems.filter((x) => x.invoice_id !== params[0]);
+    return { changes: 1 };
+  }
+  if (s.startsWith('DELETE FROM PURCHASE_INVOICES WHERE ID')) {
+    memDB.purchaseInvoices = memDB.purchaseInvoices.filter((x) => x.id !== params[0]);
+    return { changes: 1 };
+  }
+
+  // ── Reports ─────────────────────────────────────────────────
+  if (s.includes('GROUP BY DATE(CREATED_AT)')) {
+    const map = new Map<string, { total: number; count: number }>();
+    memDB.sales.forEach((sale) => {
+      const date = sale.created_at.slice(0, 10);
+      const cur = map.get(date) ?? { total: 0, count: 0 };
+      map.set(date, { total: cur.total + sale.total, count: cur.count + 1 });
+    });
+    return [...map.entries()]
+      .map(([date, v]) => ({ date, ...v }))
+      .sort((a, b) => b.date.localeCompare(a.date))
+      .slice(0, 30);
+  }
+  if (s.includes('GROUP BY SI.NAME')) {
+    const map = new Map<string, { total_qty: number; total_revenue: number }>();
+    memDB.saleItems.forEach((si) => {
+      const cur = map.get(si.name) ?? { total_qty: 0, total_revenue: 0 };
+      map.set(si.name, {
+        total_qty: cur.total_qty + si.quantity,
+        total_revenue: cur.total_revenue + si.price * si.quantity,
+      });
+    });
+    return [...map.entries()]
+      .map(([name, v]) => ({ name, ...v }))
+      .sort((a, b) => b.total_revenue - a.total_revenue)
+      .slice(0, 10);
+  }
+
+  // ── Settings ────────────────────────────────────────────────
+  if (s.startsWith('SELECT KEY, VALUE FROM SETTINGS'))
+    return Object.entries(memDB.settings).map(([key, value]) => ({ key, value }));
+
+  if (s.startsWith('UPDATE SETTINGS SET VALUE')) {
+    const [value, key] = params;
+    memDB.settings[key] = value;
+    return { changes: 1 };
+  }
+
+  // ── INSERT OR REPLACE (backup restore) ──────────────────────
+  if (s.startsWith('INSERT OR REPLACE INTO SALES')) {
+    const [id, invoice_number, total, created_at] = params;
+    const idx = memDB.sales.findIndex((x) => x.id === id);
+    const row = { id, invoice_number, total, created_at };
+    if (idx >= 0) memDB.sales[idx] = row; else memDB.sales.push(row);
+    return { changes: 1 };
+  }
+  if (s.startsWith('INSERT OR REPLACE INTO SALE_ITEMS')) {
+    const [id, sale_id, product_id, name, price, quantity] = params;
+    const idx = memDB.saleItems.findIndex((x) => x.id === id);
+    const row = { id, sale_id, product_id, name, price, quantity };
+    if (idx >= 0) memDB.saleItems[idx] = row; else memDB.saleItems.push(row);
+    return { changes: 1 };
+  }
+
+  console.warn('[MOCK] Unhandled SQL:', sql, params);
+  return [];
+};
+
+const mockTransaction = async (
+  statements: { sql: string; params?: any[] }[]
+): Promise<any[]> => {
+  const results: any[] = [];
+  for (const stmt of statements) {
+    results.push(await mockQuery(stmt.sql, stmt.params ?? []));
+  }
+  return results;
+};
+
+const mockDeleteSale = async (saleId: string): Promise<void> => {
+  await mockQuery('DELETE FROM sale_items WHERE sale_id = ?', [saleId]);
+  await mockQuery('DELETE FROM sales WHERE id = ?', [saleId]);
+};
+
+const mockDeletePurchase = async (invoiceId: string): Promise<void> => {
+  await mockQuery('DELETE FROM purchase_items WHERE invoice_id = ?', [invoiceId]);
+  await mockQuery('DELETE FROM purchase_invoices WHERE id = ?', [invoiceId]);
+};
+// ─────────────────────────────────────────────────────────────────────────────
+
 const api = () => {
   if (!window.electronAPI) {
-    const msg = 'Electron API not available. Make sure you are running inside Electron.';
-    console.warn(msg);
-    throw new Error(msg);
+    console.info('[POS] Running in mock/browser mode — using in-memory DB');
+    return {
+      dbQuery: mockQuery,
+      dbTransaction: mockTransaction,
+      deleteSale: mockDeleteSale,
+      deletePurchase: mockDeletePurchase,
+      saveFile: async () => false,
+      openFile: async () => null,
+    };
   }
   return window.electronAPI;
 };
@@ -131,7 +348,7 @@ export const dbService = {
       Number(product.price) || 0,
       product.barcode || null,
       Number(product.stock) || 0,
-      product.category_id || null
+      product.category_id || null,
     ];
     console.log('[POS] dbService.addProduct params:', params);
     return api().dbQuery(
@@ -150,8 +367,9 @@ export const dbService = {
     api().dbQuery('DELETE FROM products WHERE id = ?', [id]),
 
   getProductByBarcode: (barcode: string): Promise<Product | undefined> =>
-    api().dbQuery('SELECT * FROM products WHERE barcode = ? LIMIT 1', [barcode])
-         .then((rows: Product[]) => rows[0]),
+    api()
+      .dbQuery('SELECT * FROM products WHERE barcode = ? LIMIT 1', [barcode])
+      .then((rows: Product[]) => rows[0]),
 
   updateStock: (productId: string, delta: number): Promise<any> =>
     api().dbQuery(
@@ -261,9 +479,9 @@ export const dbService = {
   updateSetting: (key: string, value: string): Promise<any> =>
     api().dbQuery('UPDATE settings SET value = ? WHERE key = ?', [value, key]),
 
-  restoreBackup: async (data: { sales: any[], sale_items: any[] }): Promise<void> => {
+  restoreBackup: async (data: { sales: any[]; sale_items: any[] }): Promise<void> => {
     const statements: any[] = [];
-    
+
     // Clear existing (Optional, but safer for "restore")
     // statements.push({ sql: 'DELETE FROM sale_items', params: [] });
     // statements.push({ sql: 'DELETE FROM sales', params: [] });
@@ -271,13 +489,13 @@ export const dbService = {
     for (const sale of data.sales) {
       statements.push({
         sql: 'INSERT OR REPLACE INTO sales (id, invoice_number, total, created_at) VALUES (?, ?, ?, ?)',
-        params: [sale.id, sale.invoice_number, sale.total, sale.created_at]
+        params: [sale.id, sale.invoice_number, sale.total, sale.created_at],
       });
     }
     for (const item of data.sale_items) {
       statements.push({
         sql: 'INSERT OR REPLACE INTO sale_items (id, sale_id, product_id, name, price, quantity) VALUES (?, ?, ?, ?, ?, ?)',
-        params: [item.id, item.sale_id, item.product_id, item.name, item.price, item.quantity]
+        params: [item.id, item.sale_id, item.product_id, item.name, item.price, item.quantity],
       });
     }
     await api().dbTransaction(statements);
