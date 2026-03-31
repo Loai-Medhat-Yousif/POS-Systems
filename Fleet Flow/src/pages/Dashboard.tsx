@@ -4,7 +4,15 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/db/db';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Package, Truck, CircleCheck, DollarSign } from 'lucide-react';
+import { 
+  Package, 
+  Truck, 
+  CircleCheck, 
+  DollarSign, 
+  Download, 
+  Upload,
+  AlertCircle 
+} from 'lucide-react';
 import {
   startOfDay, endOfDay, subDays, subWeeks, subMonths,
   startOfWeek, endOfWeek, startOfMonth, endOfMonth, format,
@@ -49,7 +57,6 @@ function getPeriodRanges(period: Period) {
       });
     }
   }
-
   return ranges;
 }
 
@@ -57,6 +64,73 @@ export default function Dashboard() {
   const { t } = useTranslation();
   const [period, setPeriod] = useState<Period>('daily');
 
+  // --- Export Logic ---
+  const handleExport = async () => {
+    try {
+      const drivers = await db.drivers.toArray();
+      const orders = await db.orders.toArray();
+      
+      const data = {
+        drivers,
+        orders,
+        exportDate: new Date().toISOString(),
+        version: "1.0"
+      };
+
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `fleetflow_backup_${format(new Date(), 'yyyy-MM-dd')}.json`;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Export failed:", error);
+      alert("Failed to export data");
+    }
+  };
+
+  // --- Import Logic ---
+  const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const confirmOverwrite = window.confirm(
+      "Importing will delete all current data and replace it with the file data. Continue?"
+    );
+    if (!confirmOverwrite) {
+      event.target.value = ''; // Reset input
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const json = JSON.parse(e.target?.result as string);
+        
+        if (!json.drivers || !json.orders) {
+          throw new Error("Invalid format: Missing drivers or orders tables.");
+        }
+
+        // Perform atomic replacement
+        await db.transaction('rw', db.drivers, db.orders, async () => {
+          await db.drivers.clear();
+          await db.orders.clear();
+          await db.drivers.bulkAdd(json.drivers);
+          await db.orders.bulkAdd(json.orders);
+        });
+
+        alert("Data imported successfully!");
+        window.location.reload(); // Refresh to update all hooks
+      } catch (error) {
+        console.error("Import failed:", error);
+        alert("Import failed. Ensure the file is a valid FleetFlow JSON backup.");
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  // --- Statistics Queries ---
   const todayStart = startOfDay(new Date()).getTime();
   const todayEnd = endOfDay(new Date()).getTime();
 
@@ -113,7 +187,45 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-3xl font-bold tracking-tight text-[#1F3B61]">{t('nav.dashboard')}</h2>
+      {/* Header with Export/Import */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <h2 className="text-3xl font-bold tracking-tight text-[#1F3B61]">{t('nav.dashboard')}</h2>
+        
+        <div className="flex items-center gap-2">
+          {/* Export */}
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handleExport}
+            className="flex items-center gap-2 border-slate-200 text-slate-600 hover:bg-slate-50"
+          >
+            <Download className="h-4 w-4" />
+            {t('common.export', 'Export')}
+          </Button>
+
+          {/* Import */}
+          <div className="relative">
+            <input
+              type="file"
+              id="import-db"
+              className="hidden"
+              accept=".json"
+              onChange={handleImport}
+            />
+            <Button 
+              variant="outline" 
+              size="sm"
+              asChild
+              className="cursor-pointer border-slate-200 text-slate-600 hover:bg-slate-50"
+            >
+              <label htmlFor="import-db" className="flex items-center gap-2">
+                <Upload className="h-4 w-4" />
+                {t('common.import', 'Import')}
+              </label>
+            </Button>
+          </div>
+        </div>
+      </div>
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

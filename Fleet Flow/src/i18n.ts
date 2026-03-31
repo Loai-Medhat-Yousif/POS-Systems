@@ -16,10 +16,13 @@ const resources = {
         logout: 'Logout',
       },
       auth: {
-        login: 'Login',
+        login: 'Sign In',
         username: 'Username',
         password: 'Password',
-        error: 'Invalid credentials',
+        serialLabel: 'Serial Number',
+        serialHint: 'Enter the serial number from your license',
+        loggingIn: 'Verifying...',
+        error: 'An unexpected error occurred.'
       },
       dashboard: {
         totalOrders: 'Total Orders Today',
@@ -99,9 +102,12 @@ const resources = {
         cancel: 'Cancel',
         actions: 'Actions',
         egp: 'EGP',
+        export: 'Export',
+        import: 'Import',
       }
     }
   },
+
   ar: {
     translation: {
       app: {
@@ -119,7 +125,10 @@ const resources = {
         login: 'تسجيل الدخول',
         username: 'اسم المستخدم',
         password: 'كلمة المرور',
-        error: 'بيانات الاعتماد غير صالحة',
+        serialLabel: 'الرقم التسلسلي',
+        serialHint: 'أدخل الرقم التسلسلي الخاص بترخيصك',
+        loggingIn: 'جارٍ التحقق...',
+        error: 'حدث خطأ غير متوقع.'
       },
       dashboard: {
         totalOrders: 'إجمالي طلبات اليوم',
@@ -199,6 +208,8 @@ const resources = {
         cancel: 'إلغاء',
         actions: 'إجراءات',
         egp: 'ج.م',
+        export: 'تصدير',
+        import: 'استيراد',
       }
     }
   }
@@ -208,7 +219,7 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
-    lng: 'en', // default language
+    lng: 'en',
     fallbackLng: 'en',
     interpolation: {
       escapeValue: false

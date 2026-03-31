@@ -34,7 +34,9 @@ import { Search, Plus, Edit, Trash2, Truck } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function Orders() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.dir() === 'rtl';
+
   const [search, setSearch] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
@@ -51,6 +53,26 @@ export default function Orders() {
     cashCollected: 0
   });
 
+  // ─── Translation maps ───────────────────────────────────────────────────────
+  const paymentTypeLabels: Record<string, string> = {
+    Cash: t('orders.cash'),
+    Paid: t('orders.paid'),
+  };
+
+  const statusLabels: Record<string, string> = {
+    Pending:   t('orders.pending'),
+    Assigned:  t('orders.assigned'),
+    Delivered: t('orders.delivered'),
+    Failed:    t('orders.failed'),
+  };
+
+  const driverStatusLabels: Record<string, string> = {
+    Available: t('drivers.available'),
+    Busy:      t('drivers.busy'),
+    Offline:   t('drivers.offline'),
+  };
+  // ────────────────────────────────────────────────────────────────────────────
+
   const orders = useLiveQuery(
     () => db.orders
       .filter(o => o.customerName.toLowerCase().includes(search.toLowerCase()) || o.phone.includes(search))
@@ -61,7 +83,6 @@ export default function Orders() {
 
   const drivers = useLiveQuery(() => db.drivers.toArray());
 
-  // Filter orders for active and history tabs
   const activeOrders = orders?.filter(order =>
     order.status === 'Pending' || order.status === 'Assigned'
   ) || [];
@@ -112,7 +133,6 @@ export default function Orders() {
           updatedAt: Date.now()
         });
 
-        // If order changed to Delivered or Failed, check if driver should become Available
         if (
           (formData.status === 'Delivered' || formData.status === 'Failed') &&
           editingOrder.driverId
@@ -146,10 +166,10 @@ export default function Orders() {
   const handleAssignSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingOrder) return;
-    
+
     const isUnassigned = selectedDriverId === 'unassigned' || !selectedDriverId;
     const previousDriverId = editingOrder.driverId;
-    
+
     try {
       await db.orders.update(editingOrder.id, {
         driverId: isUnassigned ? undefined : selectedDriverId,
@@ -157,12 +177,10 @@ export default function Orders() {
         updatedAt: Date.now()
       });
 
-      // Set newly assigned driver to Busy
       if (!isUnassigned) {
         await db.drivers.update(selectedDriverId, { status: 'Busy' });
       }
 
-      // If previous driver was changed/removed, check if they have other active orders
       if (previousDriverId && (isUnassigned || previousDriverId !== selectedDriverId)) {
         const otherActiveOrders = await db.orders
           .where('driverId')
@@ -191,24 +209,104 @@ export default function Orders() {
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
       case 'Delivered': return 'bg-green-500 hover:bg-green-600';
-      case 'Failed': return 'bg-red-500 hover:bg-red-600';
-      case 'Assigned': return 'bg-blue-500 hover:bg-blue-600';
-      default: return 'bg-orange-500 hover:bg-orange-600';
+      case 'Failed':    return 'bg-red-500 hover:bg-red-600';
+      case 'Assigned':  return 'bg-blue-500 hover:bg-blue-600';
+      default:          return 'bg-orange-500 hover:bg-orange-600';
     }
   };
 
+  const OrdersTable = ({ orderList, showAssign }: { orderList: Order[], showAssign: boolean }) => (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>{t('orders.customerName')}</TableHead>
+          <TableHead>{t('orders.phone')}</TableHead>
+          <TableHead>{t('orders.address')}</TableHead>
+          <TableHead>{t('orders.deliveryFee')}</TableHead>
+          <TableHead>{t('orders.status')}</TableHead>
+          <TableHead>{t('nav.drivers')}</TableHead>
+          <TableHead className="text-end">{t('common.actions')}</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {orderList.length === 0 ? (
+          <TableRow>
+            <TableCell colSpan={7} className="text-center py-6 text-muted-foreground">
+              {showAssign ? t('orders.noActiveOrders') : t('orders.noHistoryOrders')}
+            </TableCell>
+          </TableRow>
+        ) : (
+          orderList.map((order) => {
+            const driver = drivers?.find(d => d.id === order.driverId);
+            return (
+              <TableRow key={order.id}>
+                <TableCell className="font-medium">{order.customerName}</TableCell>
+                <TableCell>{order.phone}</TableCell>
+                <TableCell className="max-w-[200px] truncate" title={order.address}>
+                  {order.address}
+                </TableCell>
+                <TableCell>
+                  {order.deliveryFee} {t('common.egp')}
+                </TableCell>
+                <TableCell>
+                  <Badge className={`text-white ${getStatusBadgeVariant(order.status)}`}>
+                    {statusLabels[order.status] ?? order.status}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  {driver
+                    ? driver.name
+                    : <span className="text-muted-foreground text-sm">{t('orders.unassigned')}</span>
+                  }
+                </TableCell>
+                <TableCell className="text-end">
+                  <div className="flex items-center justify-end gap-1">
+                    {showAssign && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleOpenAssignDialog(order)}
+                        title={t('orders.assignDriver')}
+                      >
+                        <Truck className="h-4 w-4 text-blue-500" />
+                      </Button>
+                    )}
+                    <Button variant="ghost" size="icon" onClick={() => handleOpenDialog(order)}>
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-red-500 hover:text-red-600"
+                      onClick={() => handleDelete(order.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            );
+          })
+        )}
+      </TableBody>
+    </Table>
+  );
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" dir={isRTL ? 'rtl' : 'ltr'}>
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight text-[#1F3B61]">{t('orders.title')}</h2>
+        <h2 className="text-3xl font-bold tracking-tight text-[#1F3B61]">
+          {t('orders.title')}
+        </h2>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button onClick={() => handleOpenDialog()} className="bg-[#1F3B61] hover:bg-[#152a47]">
-              <Plus className="mr-2 h-4 w-4" />
+              <Plus className="me-2 h-4 w-4" />
               {t('orders.add')}
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" dir={isRTL ? 'rtl' : 'ltr'}>
             <DialogHeader>
               <DialogTitle>{editingOrder ? t('orders.edit') : t('orders.add')}</DialogTitle>
             </DialogHeader>
@@ -242,11 +340,14 @@ export default function Orders() {
                   <Label>{t('orders.deliveryFee')}</Label>
                   <Input
                     type="number"
+                    min={0}
                     required
                     value={formData.deliveryFee}
                     onChange={e => setFormData({ ...formData, deliveryFee: Number(e.target.value) })}
                   />
                 </div>
+
+                {/* ── paymentType Select ── */}
                 <div className="space-y-2">
                   <Label>{t('orders.paymentType')}</Label>
                   <Select
@@ -254,7 +355,9 @@ export default function Orders() {
                     onValueChange={(value: 'Cash' | 'Paid') => setFormData({ ...formData, paymentType: value })}
                   >
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue>
+                        {paymentTypeLabels[formData.paymentType]}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Cash">{t('orders.cash')}</SelectItem>
@@ -262,16 +365,22 @@ export default function Orders() {
                     </SelectContent>
                   </Select>
                 </div>
+
                 {editingOrder && (
                   <>
+                    {/* ── status Select ── */}
                     <div className="space-y-2">
                       <Label>{t('orders.status')}</Label>
                       <Select
                         value={formData.status}
-                        onValueChange={(value: 'Pending' | 'Assigned' | 'Delivered' | 'Failed') => setFormData({ ...formData, status: value })}
+                        onValueChange={(value: 'Pending' | 'Assigned' | 'Delivered' | 'Failed') =>
+                          setFormData({ ...formData, status: value })
+                        }
                       >
                         <SelectTrigger>
-                          <SelectValue />
+                          <SelectValue>
+                            {statusLabels[formData.status]}
+                          </SelectValue>
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="Pending">{t('orders.pending')}</SelectItem>
@@ -281,11 +390,13 @@ export default function Orders() {
                         </SelectContent>
                       </Select>
                     </div>
+
                     {formData.status === 'Delivered' && formData.paymentType === 'Cash' && (
                       <div className="space-y-2">
                         <Label>{t('orders.cashCollected')}</Label>
                         <Input
                           type="number"
+                          min={0}
                           value={formData.cashCollected}
                           onChange={e => setFormData({ ...formData, cashCollected: Number(e.target.value) })}
                         />
@@ -307,6 +418,7 @@ export default function Orders() {
         </Dialog>
       </div>
 
+      {/* Table Card */}
       <Card className="shadow-sm">
         <CardHeader className="pb-3">
           <div className="relative w-full max-w-sm">
@@ -326,114 +438,11 @@ export default function Orders() {
               <TabsTrigger value="active">{t('orders.active')}</TabsTrigger>
               <TabsTrigger value="history">{t('orders.history')}</TabsTrigger>
             </TabsList>
-
             <TabsContent value="active">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t('orders.customerName')}</TableHead>
-                    <TableHead>{t('orders.phone')}</TableHead>
-                    <TableHead>{t('orders.address')}</TableHead>
-                    <TableHead>{t('orders.deliveryFee')}</TableHead>
-                    <TableHead>{t('orders.status')}</TableHead>
-                    <TableHead>{t('nav.drivers')}</TableHead>
-                    <TableHead className="text-right">{t('common.actions')}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {activeOrders?.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={7} className="text-center py-6 text-muted-foreground">
-                        {t('orders.noActiveOrders')}
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    activeOrders?.map((order) => {
-                      const driver = drivers?.find(d => d.id === order.driverId);
-                      return (
-                        <TableRow key={order.id}>
-                          <TableCell className="font-medium">{order.customerName}</TableCell>
-                          <TableCell>{order.phone}</TableCell>
-                          <TableCell className="max-w-[200px] truncate" title={order.address}>{order.address}</TableCell>
-                          <TableCell>{order.deliveryFee} {t('common.egp')}</TableCell>
-                          <TableCell>
-                            <Badge className={`text-white ${getStatusBadgeVariant(order.status)}`}>
-                              {t(`orders.${order.status.toLowerCase()}`)}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            {driver ? driver.name : <span className="text-muted-foreground text-sm">{t('orders.unassigned')}</span>}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Button variant="ghost" size="icon" onClick={() => handleOpenAssignDialog(order)} title={t('orders.assignDriver')}>
-                              <Truck className="h-4 w-4 text-blue-500" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleOpenDialog(order)}>
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-600" onClick={() => handleDelete(order.id)}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })
-                  )}
-                </TableBody>
-              </Table>
+              <OrdersTable orderList={activeOrders} showAssign={true} />
             </TabsContent>
-
             <TabsContent value="history">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t('orders.customerName')}</TableHead>
-                    <TableHead>{t('orders.phone')}</TableHead>
-                    <TableHead>{t('orders.address')}</TableHead>
-                    <TableHead>{t('orders.deliveryFee')}</TableHead>
-                    <TableHead>{t('orders.status')}</TableHead>
-                    <TableHead>{t('nav.drivers')}</TableHead>
-                    <TableHead className="text-right">{t('common.actions')}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {historyOrders?.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={7} className="text-center py-6 text-muted-foreground">
-                        {t('orders.noHistoryOrders')}
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    historyOrders?.map((order) => {
-                      const driver = drivers?.find(d => d.id === order.driverId);
-                      return (
-                        <TableRow key={order.id}>
-                          <TableCell className="font-medium">{order.customerName}</TableCell>
-                          <TableCell>{order.phone}</TableCell>
-                          <TableCell className="max-w-[200px] truncate" title={order.address}>{order.address}</TableCell>
-                          <TableCell>{order.deliveryFee} {t('common.egp')}</TableCell>
-                          <TableCell>
-                            <Badge className={`text-white ${getStatusBadgeVariant(order.status)}`}>
-                              {t(`orders.${order.status.toLowerCase()}`)}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            {driver ? driver.name : <span className="text-muted-foreground text-sm">{t('orders.unassigned')}</span>}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Button variant="ghost" size="icon" onClick={() => handleOpenDialog(order)}>
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-600" onClick={() => handleDelete(order.id)}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })
-                  )}
-                </TableBody>
-              </Table>
+              <OrdersTable orderList={historyOrders} showAssign={false} />
             </TabsContent>
           </Tabs>
         </CardContent>
@@ -441,25 +450,33 @@ export default function Orders() {
 
       {/* Assign Driver Dialog */}
       <Dialog open={isAssignDialogOpen} onOpenChange={setIsAssignDialogOpen}>
-        <DialogContent>
+        <DialogContent dir={isRTL ? 'rtl' : 'ltr'}>
           <DialogHeader>
             <DialogTitle>{t('orders.assignDriver')}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleAssignSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label>{t('nav.drivers')}</Label>
-              <Select
-                value={selectedDriverId}
-                onValueChange={setSelectedDriverId}
-              >
+              {/* ── driver Select ── */}
+              <Select value={selectedDriverId} onValueChange={setSelectedDriverId}>
                 <SelectTrigger>
-                  <SelectValue placeholder={t('orders.unassigned')} />
+                  <SelectValue placeholder={t('orders.unassigned')}>
+                    {!selectedDriverId || selectedDriverId === 'unassigned'
+                      ? t('orders.unassigned')
+                      : (() => {
+                          const d = drivers?.find(d => d.id === selectedDriverId);
+                          return d
+                            ? `${d.name} (${driverStatusLabels[d.status] ?? d.status})`
+                            : t('orders.unassigned');
+                        })()
+                    }
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="unassigned">{t('orders.unassigned')}</SelectItem>
                   {drivers?.map(driver => (
                     <SelectItem key={driver.id} value={driver.id}>
-                      {driver.name} ({driver.status})
+                      {driver.name} ({driverStatusLabels[driver.status] ?? driver.status})
                     </SelectItem>
                   ))}
                 </SelectContent>
