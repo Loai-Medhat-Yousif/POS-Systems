@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Edit, Trash2, Tag, Package, FlaskConical } from "lucide-react";
+import { Plus, Edit, Trash2, Tag, Package } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { dbService, Category } from "@/lib/db";
@@ -16,24 +16,12 @@ interface CategoryManagementProps {
 
 const COLORS = ["#3B82F6", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#06B6D4", "#84CC16", "#F97316"];
 
-const TEST_CATEGORIES: Omit<Category, "id">[] = [
-  { name: "مشروبات", color: "#3B82F6" },
-  { name: "وجبات رئيسية", color: "#10B981" },
-  { name: "مقبلات", color: "#F59E0B" },
-  { name: "حلويات", color: "#EF4444" },
-  { name: "وجبات سريعة", color: "#8B5CF6" },
-  { name: "سلطات", color: "#06B6D4" },
-  { name: "مخبوزات", color: "#84CC16" },
-  { name: "إضافات", color: "#F97316" },
-];
-
 const CategoryManagement = ({ categories, onCategoriesUpdate }: CategoryManagementProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [formData, setFormData] = useState({ name: "", color: "#3B82F6" });
-  const [isSeeding, setIsSeeding] = useState(false);
 
   const refresh = () => {
     queryClient.invalidateQueries({ queryKey: ["categories"] });
@@ -80,27 +68,6 @@ const CategoryManagement = ({ categories, onCategoriesUpdate }: CategoryManageme
     setIsDialogOpen(true);
   };
 
-  // ── Seed test data ──────────────────────────────────────────────────────────
-  const handleSeedTestData = async () => {
-    if (categories.length > 0) {
-      toast({ title: "يوجد فئات بالفعل", description: "امسح الفئات الحالية أولاً قبل إضافة بيانات الاختبار", variant: "destructive" });
-      return;
-    }
-    setIsSeeding(true);
-    try {
-      for (const cat of TEST_CATEGORIES) {
-        await dbService.addCategory(cat);
-      }
-      refresh();
-      toast({ title: `تم إضافة ${TEST_CATEGORIES.length} فئات تجريبية` });
-    } catch {
-      toast({ title: "فشل إضافة بيانات الاختبار", variant: "destructive" });
-    } finally {
-      setIsSeeding(false);
-    }
-  };
-  // ───────────────────────────────────────────────────────────────────────────
-
   return (
     <Card className="bg-white/60 backdrop-blur-sm border-blue-100">
       <CardHeader>
@@ -108,58 +75,43 @@ const CategoryManagement = ({ categories, onCategoriesUpdate }: CategoryManageme
           <CardTitle className="flex items-center gap-2 text-blue-800">
             <Tag className="w-5 h-5" /> إدارة الفئات
           </CardTitle>
-          <div className="flex gap-2">
-            {/* Seed button — only visible when there are no categories */}
-            {categories.length === 0 && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleSeedTestData}
-                disabled={isSeeding}
-                className="border-amber-300 text-amber-700 hover:bg-amber-50"
-              >
-                <FlaskConical className="w-4 h-4 mr-2" />
-                {isSeeding ? "جاري الإضافة..." : "بيانات تجريبية"}
+          <Dialog open={isDialogOpen} onOpenChange={(v) => { if (!v) closeDialog(); else setIsDialogOpen(true); }}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
+                onClick={() => { setEditingCategory(null); setFormData({ name: "", color: "#3B82F6" }); }}>
+                <Plus className="w-4 h-4 mr-2" /> إضافة فئة
               </Button>
-            )}
-            <Dialog open={isDialogOpen} onOpenChange={(v) => { if (!v) closeDialog(); else setIsDialogOpen(true); }}>
-              <DialogTrigger asChild>
-                <Button size="sm" className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
-                  onClick={() => { setEditingCategory(null); setFormData({ name: "", color: "#3B82F6" }); }}>
-                  <Plus className="w-4 h-4 mr-2" /> إضافة فئة
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md" dir="rtl">
-                <DialogHeader>
-                  <DialogTitle>{editingCategory ? "تعديل الفئة" : "إضافة فئة جديدة"}</DialogTitle>
-                </DialogHeader>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div>
-                    <Label>اسم الفئة *</Label>
-                    <Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} placeholder="أدخل اسم الفئة" required />
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md" dir="rtl">
+              <DialogHeader>
+                <DialogTitle>{editingCategory ? "تعديل الفئة" : "إضافة فئة جديدة"}</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <Label>اسم الفئة *</Label>
+                  <Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} placeholder="أدخل اسم الفئة" required />
+                </div>
+                <div>
+                  <Label>لون الفئة</Label>
+                  <div className="flex gap-2 mt-2">
+                    {COLORS.map((color) => (
+                      <button key={color} type="button"
+                        className={`w-8 h-8 rounded-full border-2 ${formData.color === color ? "border-gray-800 scale-110" : "border-gray-300"} transition-transform`}
+                        style={{ backgroundColor: color }}
+                        onClick={() => setFormData({ ...formData, color })}
+                      />
+                    ))}
                   </div>
-                  <div>
-                    <Label>لون الفئة</Label>
-                    <div className="flex gap-2 mt-2">
-                      {COLORS.map((color) => (
-                        <button key={color} type="button"
-                          className={`w-8 h-8 rounded-full border-2 ${formData.color === color ? "border-gray-800 scale-110" : "border-gray-300"} transition-transform`}
-                          style={{ backgroundColor: color }}
-                          onClick={() => setFormData({ ...formData, color })}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                  <div className="flex gap-2 pt-4">
-                    <Button type="submit" className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500" disabled={addMutation.isPending || updateMutation.isPending}>
-                      {editingCategory ? "تحديث" : "إضافة"}
-                    </Button>
-                    <Button type="button" variant="outline" onClick={closeDialog}>إلغاء</Button>
-                  </div>
-                </form>
-              </DialogContent>
-            </Dialog>
-          </div>
+                </div>
+                <div className="flex gap-2 pt-4">
+                  <Button type="submit" className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500" disabled={addMutation.isPending || updateMutation.isPending}>
+                    {editingCategory ? "تحديث" : "إضافة"}
+                  </Button>
+                  <Button type="button" variant="outline" onClick={closeDialog}>إلغاء</Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
       </CardHeader>
       <CardContent>

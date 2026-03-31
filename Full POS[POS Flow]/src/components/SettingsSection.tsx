@@ -123,22 +123,6 @@ const SettingsSection = () => {
           </form>
         </CardContent>
       </Card>
-
-      <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-100/50">
-        <CardContent className="p-6">
-          <div className="flex items-start gap-4">
-            <div className="bg-white p-2 rounded-lg shadow-sm">
-              <RefreshCw className="w-5 h-5 text-blue-600" />
-            </div>
-            <div className="space-y-1">
-              <h4 className="font-bold text-slate-800">معلومة تهمك</h4>
-              <p className="text-sm text-slate-600 leading-relaxed">
-                رأيت أنك طلبت إمكانية تعديل الاسم والعنوان. هذه التغييرات سيتم تطبيقها تلقائياً على جميع الفواتير التي ستقوم بطباعتها من الآن فصاعداً.
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };

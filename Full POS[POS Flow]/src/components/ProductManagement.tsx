@@ -7,30 +7,11 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Package, Plus, Search, Edit, Trash2, Barcode, FlaskConical, ChevronRight, ChevronLeft, ChevronsRight, ChevronsLeft } from "lucide-react";
+import { Package, Plus, Search, Edit, Trash2, Barcode, ChevronRight, ChevronLeft, ChevronsRight, ChevronsLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { dbService, Product, Category } from "@/lib/db";
 import CategoryManagement from "./CategoryManagement";
-
-// ── Test Data ─────────────────────────────────────────────────────────────────
-const TEST_PRODUCTS: Omit<Product, "id">[] = [
-  { name: "قهوة عربية",     price: 15, stock: 50,  barcode: "1000000001", category_id: null },
-  { name: "شاي أخضر",       price: 10, stock: 80,  barcode: "1000000002", category_id: null },
-  { name: "عصير برتقال",    price: 20, stock: 40,  barcode: "1000000003", category_id: null },
-  { name: "كابتشينو",       price: 25, stock: 60,  barcode: "1000000004", category_id: null },
-  { name: "شاورما دجاج",    price: 45, stock: 30,  barcode: "1000000005", category_id: null },
-  { name: "برجر لحم",       price: 65, stock: 20,  barcode: "1000000006", category_id: null },
-  { name: "بيتزا مارغريتا", price: 80, stock: 15,  barcode: "1000000007", category_id: null },
-  { name: "كشري",           price: 25, stock: 50,  barcode: "1000000008", category_id: null },
-  { name: "حمص بالطحينة",   price: 18, stock: 45,  barcode: "1000000009", category_id: null },
-  { name: "فلافل",          price: 12, stock: 70,  barcode: "1000000010", category_id: null },
-  { name: "سلطة خضراء",    price: 20, stock: 35,  barcode: "1000000011", category_id: null },
-  { name: "كنافة",          price: 30, stock: 25,  barcode: "1000000012", category_id: null },
-  { name: "بسبوسة",         price: 15, stock: 60,  barcode: "1000000013", category_id: null },
-  { name: "خبز عيش بلدي",  price: 5,  stock: 100, barcode: "1000000014", category_id: null },
-  { name: "سمبوسة جبن",    price: 8,  stock: 90,  barcode: "1000000015", category_id: null },
-];
 
 const PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
 
@@ -41,7 +22,6 @@ const ProductManagement = () => {
   const [searchTerm, setSearchTerm]     = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [isSeeding, setIsSeeding]       = useState(false);
   const [currentPage, setCurrentPage]   = useState(1);
   const [pageSize, setPageSize]         = useState(5);
   const [formData, setFormData] = useState({
@@ -116,44 +96,6 @@ const ProductManagement = () => {
     onError: () => toast({ title: "فشل الحذف", variant: "destructive" }),
   });
 
-  // ── Seed Test Data ────────────────────────────────────────────
-  const handleSeedTestData = async () => {
-    if (products.length > 0) {
-      toast({ title: "يوجد منتجات بالفعل", description: "امسح المنتجات الحالية أولاً", variant: "destructive" });
-      return;
-    }
-    setIsSeeding(true);
-    try {
-      const catMap: Record<string, string> = {};
-      categories.forEach((c) => { catMap[c.name] = c.id; });
-
-      const enriched = TEST_PRODUCTS.map((p) => {
-        if (categories.length === 0) return p;
-        if (["قهوة عربية","شاي أخضر","عصير برتقال","كابتشينو"].includes(p.name))
-          return { ...p, category_id: catMap["مشروبات"] ?? null };
-        if (["شاورما دجاج","برجر لحم","بيتزا مارغريتا","كشري"].includes(p.name))
-          return { ...p, category_id: catMap["وجبات رئيسية"] ?? null };
-        if (["حمص بالطحينة","فلافل","سمبوسة جبن"].includes(p.name))
-          return { ...p, category_id: catMap["مقبلات"] ?? null };
-        if (["كنافة","بسبوسة"].includes(p.name))
-          return { ...p, category_id: catMap["حلويات"] ?? null };
-        if (["سلطة خضراء"].includes(p.name))
-          return { ...p, category_id: catMap["سلطات"] ?? null };
-        if (["خبز عيش بلدي"].includes(p.name))
-          return { ...p, category_id: catMap["مخبوزات"] ?? null };
-        return p;
-      });
-
-      for (const product of enriched) await dbService.addProduct(product as any);
-      queryClient.invalidateQueries({ queryKey: ["products"] });
-      toast({ title: `تم إضافة ${TEST_PRODUCTS.length} منتج تجريبي` });
-    } catch (err) {
-      toast({ title: "فشل إضافة بيانات الاختبار", description: err instanceof Error ? err.message : String(err), variant: "destructive" });
-    } finally {
-      setIsSeeding(false);
-    }
-  };
-
   // ── Helpers ───────────────────────────────────────────────────
   const closeDialog = () => {
     setIsDialogOpen(false);
@@ -206,13 +148,6 @@ const ProductManagement = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h2 className="text-2xl font-bold text-blue-800">إدارة المنتجات</h2>
         <div className="flex gap-2">
-          {products.length === 0 && !isLoading && (
-            <Button variant="outline" onClick={handleSeedTestData} disabled={isSeeding}
-              className="border-amber-300 text-amber-700 hover:bg-amber-50">
-              <FlaskConical className="w-4 h-4 mr-2" />
-              {isSeeding ? "جاري الإضافة..." : "بيانات تجريبية"}
-            </Button>
-          )}
           <Dialog open={isDialogOpen} onOpenChange={(v) => { if (!v) closeDialog(); else setIsDialogOpen(true); }}>
             <DialogTrigger asChild>
               <Button
