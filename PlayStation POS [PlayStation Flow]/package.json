@@ -34,9 +34,10 @@
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
+      "createDesktopShortcut": "always",
       "createStartMenuShortcut": true,
-      "shortcutName": "PlayStation Flow"
+      "shortcutName": "PlayStation Flow",
+      "include": "electron/installer.nsh"
     }
   },
   "dependencies": {

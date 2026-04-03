@@ -26,21 +26,12 @@ export const useStore = create<Store>()(
   persist(
     (set) => ({
       theme: 'light',
-      devices: [
-        { id: '1', name: 'جهاز 1', room: 'الغرفة العامة', type: 'PS5', hourlyRateSingle: 30, hourlyRateMulti: 40, games: ['FIFA 24', 'GTA V'] },
-        { id: '2', name: 'جهاز 2', room: 'الغرفة العامة', type: 'PS4', hourlyRateSingle: 20, hourlyRateMulti: 30, games: ['FIFA 23', 'Crash'] },
-        { id: '3', name: 'VIP 1', room: 'غرفة VIP', type: 'PS5', hourlyRateSingle: 50, hourlyRateMulti: 60, games: ['FIFA 24', 'Call of Duty', 'Tekken 8'] },
-      ],
-      products: [
-        { id: '1', name: 'مياه معدنية', price: 5, stock: 100, category: 'drink' },
-        { id: '2', name: 'بيبسي', price: 15, stock: 50, category: 'drink' },
-        { id: '3', name: 'شيبسي', price: 10, stock: 40, category: 'snack' },
-        { id: '4', name: 'إندومي', price: 25, stock: 30, category: 'food' },
-      ],
+      devices: [],
+      products: [],
       settings: {
         shopName: 'PlayStation Flow',
-        shopAddress: 'القاهرة، شارع النصر',
-        footerMessage: 'شكراً لزيارتكم، نتمنى رؤيتكم قريباً!',
+        shopAddress: '',
+        footerMessage: '',
       },
       sessions: [],
 
@@ -99,7 +90,7 @@ export const useStore = create<Store>()(
       loadData: (data) => set((state) => ({ ...state, ...data })),
     }),
     {
-      name: 'ps-cafe-storage',
+      name: 'ps-flow-storage-v1',
     }
   )
 );

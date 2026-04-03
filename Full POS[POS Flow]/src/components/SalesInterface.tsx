@@ -289,7 +289,7 @@ const SalesInterface = () => {
         <div className="lg:col-span-4 space-y-6">
           {/* Cart Section */}
           <div className="space-y-4">
-            <Card className="bg-white/80 backdrop-blur-sm border-blue-100 sticky top-24">
+            <Card className="bg-white/80 backdrop-blur-sm border-blue-100 lg:sticky lg:top-24">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-blue-800">
                   <Receipt className="w-5 h-5" />

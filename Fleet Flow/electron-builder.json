@@ -7,15 +7,18 @@
   "files": [
     "dist/**/*",
     "electron/**/*",
-    "fleet-flow.ico"
+    "fleet-flow.png"
   ],
   "win": {
     "target": ["nsis"],
-    "icon": "fleet-flow.ico"
+    "icon": "fleet-flow.png"
   },
   "nsis": {
     "oneClick": false,
     "perMachine": false,
-    "allowToChangeInstallationDirectory": true
+    "allowToChangeInstallationDirectory": true,
+    "createDesktopShortcut": "always",
+    "createStartMenuShortcut": true,
+    "shortcutName": "Fleet Flow"
   }
 }

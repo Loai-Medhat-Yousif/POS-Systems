@@ -75,149 +75,161 @@ export default function Dashboard() {
         <p className="text-slate-500 dark:text-slate-400 mt-1">متابعة حالة الأجهزة والجلسات الحالية.</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {devices.map(device => {
-          const activeSession = sessions.find(s => s.deviceId === device.id && s.status === 'active');
-          const cost = activeSession ? calculateSessionCost(activeSession, device) : null;
+      {devices.length > 0 ? (
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+          {devices.map(device => {
+            const activeSession = sessions.find(s => s.deviceId === device.id && s.status === 'active');
+            const cost = activeSession ? calculateSessionCost(activeSession, device) : null;
 
-          return (
-            <div 
-              key={device.id} 
-              className={cn(
-                "rounded-2xl border overflow-hidden transition-all duration-300 shadow-sm",
-                activeSession 
-                  ? "bg-white dark:bg-slate-900 border-blue-200 dark:border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.1)] dark:shadow-[0_0_20px_rgba(59,130,246,0.15)]" 
-                  : "bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800"
-              )}
-            >
-              {/* Header */}
-              <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900/20">
-                <div className="flex items-center gap-3">
-                  <div className={cn(
-                    "w-10 h-10 rounded-xl flex items-center justify-center border",
-                    activeSession ? "bg-blue-50 dark:bg-blue-500/20 border-blue-200 dark:border-blue-500/30" : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700"
-                  )}>
-                    <Tv className={cn("w-5 h-5", activeSession ? "text-blue-600 dark:text-blue-400" : "text-slate-400 dark:text-slate-500")} />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white">{device.name}</h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">{device.room} • {device.type}</p>
-                  </div>
-                </div>
-                <div className={cn(
-                  "px-3 py-1 rounded-full text-xs font-semibold border",
+            return (
+              <div 
+                key={device.id} 
+                className={cn(
+                  "rounded-2xl border overflow-hidden transition-all duration-300 shadow-sm",
                   activeSession 
-                    ? "bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-500/20 animate-pulse" 
-                    : "bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700"
-                )}>
-                  {activeSession ? 'مشغول' : 'متاح'}
-                </div>
-              </div>
-
-              {/* Body */}
-              <div className="p-5 bg-white dark:bg-transparent">
-                {activeSession && cost ? (
-                  <div className="space-y-5">
-                    {/* Timer & Cost */}
-                    <div className="flex justify-between items-end">
-                      <div>
-                        <p className="text-sm text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1">
-                          <Clock className="w-4 h-4" /> الوقت المنقضي
-                        </p>
-                        <p className="text-3xl font-mono font-bold text-slate-900 dark:text-white tracking-wider">
-                          {formatDuration(Date.now() - activeSession.startTime)}
-                        </p>
-                      </div>
-                      <div className="text-left">
-                        <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">الإجمالي</p>
-                        <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                          {formatCurrency(cost.total)}
-                        </p>
-                      </div>
+                    ? "bg-white dark:bg-slate-900 border-blue-200 dark:border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.1)] dark:shadow-[0_0_20px_rgba(59,130,246,0.15)]" 
+                    : "bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800"
+                )}
+              >
+                {/* Header */}
+                <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900/20">
+                  <div className="flex items-center gap-3">
+                    <div className={cn(
+                      "w-10 h-10 rounded-xl flex items-center justify-center border",
+                      activeSession ? "bg-blue-50 dark:bg-blue-500/20 border-blue-200 dark:border-blue-500/30" : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                    )}>
+                      <Tv className={cn("w-5 h-5", activeSession ? "text-blue-600 dark:text-blue-400" : "text-slate-400 dark:text-slate-500")} />
                     </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-white">{device.name}</h3>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{device.room} • {device.type}</p>
+                    </div>
+                  </div>
+                  <div className={cn(
+                    "px-3 py-1 rounded-full text-xs font-semibold border",
+                    activeSession 
+                      ? "bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-500/20 animate-pulse" 
+                      : "bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700"
+                  )}>
+                    {activeSession ? 'مشغول' : 'متاح'}
+                  </div>
+                </div>
 
-                    {/* Details */}
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-3 border border-slate-100 dark:border-slate-800 flex items-center gap-3">
-                        <div className="p-2 bg-indigo-100 dark:bg-indigo-500/20 rounded-md">
-                          {activeSession.isMultiplayer ? <Users className="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> : <User className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />}
-                        </div>
+                {/* Body */}
+                <div className="p-5 bg-white dark:bg-transparent">
+                  {activeSession && cost ? (
+                    <div className="space-y-5">
+                      {/* Timer & Cost */}
+                      <div className="flex justify-between items-end">
                         <div>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">النوع</p>
-                          <p className="text-sm font-semibold text-slate-900 dark:text-white">{activeSession.isMultiplayer ? 'زوجي' : 'فردي'}</p>
+                          <p className="text-sm text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1">
+                            <Clock className="w-4 h-4" /> الوقت المنقضي
+                          </p>
+                          <p className="text-3xl font-mono font-bold text-slate-900 dark:text-white tracking-wider">
+                            {formatDuration(Date.now() - activeSession.startTime)}
+                          </p>
+                        </div>
+                        <div className="text-left">
+                          <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">الإجمالي</p>
+                          <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                            {formatCurrency(cost.total)}
+                          </p>
                         </div>
                       </div>
-                      <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-3 border border-slate-100 dark:border-slate-800 flex items-center gap-3">
-                        <div className="p-2 bg-purple-100 dark:bg-purple-500/20 rounded-md">
-                          <Gamepad2 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+
+                      {/* Details */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-3 border border-slate-100 dark:border-slate-800 flex items-center gap-3">
+                          <div className="p-2 bg-indigo-100 dark:bg-indigo-500/20 rounded-md">
+                            {activeSession.isMultiplayer ? <Users className="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> : <User className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />}
+                          </div>
+                          <div>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">النوع</p>
+                            <p className="text-sm font-semibold text-slate-900 dark:text-white">{activeSession.isMultiplayer ? 'زوجي' : 'فردي'}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">الدراعات</p>
-                          <div className="flex items-center gap-2">
-                            <p className="text-sm font-semibold text-slate-900 dark:text-white">{activeSession.controllersCount}</p>
-                            <div className="flex flex-col gap-0.5">
-                              <button onClick={() => updateSessionControllers(activeSession.id, activeSession.controllersCount + 1)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white leading-none">+</button>
-                              <button onClick={() => updateSessionControllers(activeSession.id, Math.max(1, activeSession.controllersCount - 1))} className="text-slate-400 hover:text-slate-900 dark:hover:text-white leading-none">-</button>
+                        <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-3 border border-slate-100 dark:border-slate-800 flex items-center gap-3">
+                          <div className="p-2 bg-purple-100 dark:bg-purple-500/20 rounded-md">
+                            <Gamepad2 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                          </div>
+                          <div>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">الدراعات</p>
+                            <div className="flex items-center gap-2">
+                              <p className="text-sm font-semibold text-slate-900 dark:text-white">{activeSession.controllersCount}</p>
+                              <div className="flex flex-col gap-0.5">
+                                <button onClick={() => updateSessionControllers(activeSession.id, activeSession.controllersCount + 1)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white leading-none">+</button>
+                                <button onClick={() => updateSessionControllers(activeSession.id, Math.max(1, activeSession.controllersCount - 1))} className="text-slate-400 hover:text-slate-900 dark:hover:text-white leading-none">-</button>
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                    </div>
 
-                    {/* Orders Summary */}
-                    {activeSession.orders.length > 0 && (
-                      <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-3 border border-slate-100 dark:border-slate-800">
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-1">
-                          <CupSoda className="w-3 h-3" /> طلبات الكافيه ({formatCurrency(cost.ordersCost)})
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                          {activeSession.orders.map(order => {
-                            const product = products.find(p => p.id === order.productId);
-                            return product ? (
-                              <span key={order.id} className="text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-1 rounded-md text-slate-700 dark:text-slate-300">
-                                {product.name} x{order.quantity}
-                              </span>
-                            ) : null;
-                          })}
+                      {/* Orders Summary */}
+                      {activeSession.orders.length > 0 && (
+                        <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-3 border border-slate-100 dark:border-slate-800">
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-1">
+                            <CupSoda className="w-3 h-3" /> طلبات الكافيه ({formatCurrency(cost.ordersCost)})
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {activeSession.orders.map(order => {
+                              const product = products.find(p => p.id === order.productId);
+                              return product ? (
+                                <span key={order.id} className="text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-1 rounded-md text-slate-700 dark:text-slate-300">
+                                  {product.name} x{order.quantity}
+                                </span>
+                              ) : null;
+                            })}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
 
-                    {/* Actions */}
-                    <div className="flex gap-2 pt-2">
+                      {/* Actions */}
+                      <div className="flex gap-2 pt-2">
+                        <button 
+                          onClick={() => setOrderingSession(activeSession.id)}
+                          className="flex-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-white py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                        >
+                          <Plus className="w-4 h-4" /> طلب
+                        </button>
+                        <button 
+                          onClick={() => setEndingSession(activeSession.id)}
+                          className="flex-1 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-500/20 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                        >
+                          <StopCircle className="w-4 h-4" /> إنهاء
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-8 text-center">
+                      <div className="w-16 h-16 bg-slate-50 dark:bg-slate-900 rounded-full flex items-center justify-center mb-4 border border-slate-200 dark:border-slate-800">
+                        <Tv className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+                      </div>
+                      <p className="text-slate-500 dark:text-slate-400 mb-6">الجهاز متاح الآن وجاهز للعب.</p>
                       <button 
-                        onClick={() => setOrderingSession(activeSession.id)}
-                        className="flex-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-white py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                        onClick={() => setStartingDevice(device.id)}
+                        className="w-full bg-linear-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white py-3 rounded-xl font-medium transition-colors shadow-lg shadow-blue-500/20"
                       >
-                        <Plus className="w-4 h-4" /> طلب
-                      </button>
-                      <button 
-                        onClick={() => setEndingSession(activeSession.id)}
-                        className="flex-1 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-500/20 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
-                      >
-                        <StopCircle className="w-4 h-4" /> إنهاء
+                        بدء جلسة جديدة
                       </button>
                     </div>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center py-8 text-center">
-                    <div className="w-16 h-16 bg-slate-50 dark:bg-slate-900 rounded-full flex items-center justify-center mb-4 border border-slate-200 dark:border-slate-800">
-                      <Tv className="w-8 h-8 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    <p className="text-slate-500 dark:text-slate-400 mb-6">الجهاز متاح الآن وجاهز للعب.</p>
-                    <button 
-                      onClick={() => setStartingDevice(device.id)}
-                      className="w-full bg-linear-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white py-3 rounded-xl font-medium transition-colors shadow-lg shadow-blue-500/20"
-                    >
-                      بدء جلسة جديدة
-                    </button>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="text-center py-20 bg-white dark:bg-slate-900/50 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800">
+          <div className="w-20 h-20 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Tv className="w-10 h-10 text-slate-300 dark:text-slate-600" />
+          </div>
+          <h3 className="text-xl font-bold text-slate-900 dark:text-white">لا توجد أجهزة مضافة</h3>
+          <p className="text-slate-500 dark:text-slate-400 mt-2 max-w-xs mx-auto">
+            ابدأ بإضافة الأجهزة والأسعار من صفحة "إدارة الأجهزة" لتتمكن من بدء الجلسات.
+          </p>
+        </div>
+      )}
 
       {/* Start Session Modal */}
       {startingDevice && (

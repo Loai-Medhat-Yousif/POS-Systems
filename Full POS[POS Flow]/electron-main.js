@@ -111,7 +111,11 @@ function createWindow() {
     },
     title: 'Pos Flow',
     show: false,
+    autoHideMenuBar: true,
   });
+
+  // Remove menu bar completely
+  win.setMenuBarVisibility(false);
 
   win.once('ready-to-show', () => win.show());
 
@@ -229,12 +233,17 @@ app.whenReady().then(() => {
   initDatabase();
   createWindow();
 
-  // Enable auto-launch for production builds
-  if (!isDev) {
-    app.setLoginItemSettings({
-      openAtLogin: true,
-      path: app.getPath('exe'),
-    });
+  // Enable auto-launch for production builds on Windows
+  if (!isDev && process.platform === 'win32') {
+    try {
+      app.setLoginItemSettings({
+        openAtLogin: true,
+        path: app.getPath('exe'),
+      });
+      console.log('[POS] Auto-launch enabled.');
+    } catch (err) {
+      console.error('[POS] Failed to set login item settings:', err);
+    }
   }
 
   app.on('activate', () => {

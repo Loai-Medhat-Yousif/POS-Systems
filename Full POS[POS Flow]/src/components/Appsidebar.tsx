@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { to: "/",         icon: LayoutDashboard, label: "الرئيسية",   end: true  },
   { to: "/products", icon: Package,         label: "المنتجات",   end: false },
-  { to: "/pos",      icon: ShoppingCart,    label: "نقطة البيع", end: false },
+  { to: "/pos",      icon: ShoppingCart,    label: "فواتير الشراء", end: false },
   { to: "/reports",  icon: BarChart2,       label: "التقارير",   end: false },
   { to: "/settings", icon: Settings,        label: "الإعدادات",  end: false },
 ];

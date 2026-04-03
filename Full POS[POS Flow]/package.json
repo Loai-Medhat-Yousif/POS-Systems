@@ -111,11 +111,12 @@
       "icon": "src/assets/icon.ico"
     },
     "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
+      "oneClick": true,
+      "allowToChangeInstallationDirectory": false,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "Pos Flow",
+      "runAfterFinish": true,
       "artifactName": "Pos Flow Setup ${version}.${ext}"
     }
   }

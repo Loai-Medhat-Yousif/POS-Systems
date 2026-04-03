@@ -11,6 +11,7 @@ function createWindow() {
     height: 800,
     minWidth: 1024,
     minHeight: 768,
+    icon: path.join(__dirname, '../fleet-flow.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
       nodeIntegration: false,
@@ -29,6 +30,14 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  // Set the app to open at login
+  if (app.isPackaged) {
+    app.setLoginItemSettings({
+      openAtLogin: true,
+      path: app.getPath('exe')
+    });
+  }
+
   createWindow();
 
   app.on('activate', () => {

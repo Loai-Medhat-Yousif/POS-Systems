@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useStore } from './store';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
@@ -23,7 +23,7 @@ export default function App() {
   }, [theme]);
 
   return (
-    <BrowserRouter>
+    <HashRouter>
       <div dir="rtl">
         <Routes>
           {/* Public */}
@@ -40,7 +40,7 @@ export default function App() {
           />
         </Routes>
       </div>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 

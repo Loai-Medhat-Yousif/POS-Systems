@@ -18,7 +18,9 @@ function createWindow() {
     mainWindow.loadURL('http://localhost:3000');
     mainWindow.webContents.openDevTools();
   } else {
-    mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
+    // In production, use app.getAppPath() to correctly resolve paths inside the asar
+    const appPath = app.getAppPath();
+    mainWindow.loadFile(path.join(appPath, 'dist', 'index.html'));
   }
 
   mainWindow.setMenuBarVisibility(false);
