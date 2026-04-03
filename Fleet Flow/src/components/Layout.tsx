@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Truck, Package, FileText, LogOut } from 'lucide-react';
+import { LayoutDashboard, Truck, Package, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 
@@ -14,11 +14,6 @@ export function Layout() {
     { name: t('nav.drivers'), href: '/drivers', icon: Truck },
     { name: t('nav.reports'), href: '/reports', icon: FileText },
   ];
-
-  const handleLogout = () => {
-    localStorage.removeItem('fleet_flow_auth');
-    window.location.href = '/#/login';
-  };
 
   const toggleLanguage = () => {
     const newLang = i18n.language === 'ar' ? 'en' : 'ar';
@@ -65,13 +60,6 @@ export function Layout() {
               {i18n.language === 'ar' ? 'EN' : 'ع'}
             </span>
             {i18n.language === 'ar' ? 'English' : 'العربية'}
-          </button>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-3 px-3 py-2 w-full text-left text-slate-300 hover:bg-white/5 hover:text-white rounded-md transition-colors"
-          >
-            <LogOut className="w-5 h-5" />
-            {t('nav.logout')}
           </button>
         </div>
       </aside>
