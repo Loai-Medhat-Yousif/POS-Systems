@@ -39,10 +39,11 @@ const resources = {
         delete: 'Delete',
         name: 'Name',
         phone: 'Phone Number',
-        vehicleType: 'Vehicle Type',
+        vehiclePlate: 'Vehicle Plate Number',
         status: 'Status',
         available: 'Available',
         busy: 'Busy',
+        offline: 'Offline',
         search: 'Search drivers...',
         noDrivers: 'No drivers found.',
       },
@@ -104,6 +105,17 @@ const resources = {
         egp: 'EGP',
         export: 'Export',
         import: 'Import',
+        errorSavingOrder: 'Error saving order',
+        errorAssigningDriver: 'Error assigning driver',
+        deleteOrderConfirm: 'Are you sure you want to delete this order?',
+        orderDeleted: 'Order deleted',
+        errorSavingDriver: 'Error saving driver',
+        deleteDriverConfirm: 'Are you sure you want to delete this driver?',
+        driverDeleted: 'Driver deleted',
+        exportFailed: 'Failed to export data',
+        importConfirm: 'Importing will delete all current data and replace it with the file data. Continue?',
+        importSuccess: 'Data imported successfully!',
+        importFailed: 'Import failed. Ensure the file is a valid backup.'
       }
     }
   },
@@ -145,10 +157,11 @@ const resources = {
         delete: 'حذف',
         name: 'الاسم',
         phone: 'رقم الهاتف',
-        vehicleType: 'نوع المركبة',
+        vehiclePlate: 'رقم المركبه',
         status: 'الحالة',
         available: 'متاح',
         busy: 'مشغول',
+        offline: 'غير متصل',
         search: 'البحث عن سائقين...',
         noDrivers: 'لم يتم العثور على سائقين.',
       },
@@ -210,6 +223,17 @@ const resources = {
         egp: 'ج.م',
         export: 'تصدير',
         import: 'استيراد',
+        errorSavingOrder: 'خطأ في حفظ الطلب',
+        errorAssigningDriver: 'خطأ في تعيين السائق',
+        deleteOrderConfirm: 'هل أنت متأكد من أنك تريد حذف هذا الطلب؟',
+        orderDeleted: 'تم حذف الطلب',
+        errorSavingDriver: 'خطأ في حفظ السائق',
+        deleteDriverConfirm: 'هل أنت متأكد من أنك تريد حذف هذا السائق؟',
+        driverDeleted: 'تم حذف السائق',
+        exportFailed: 'فشل في تصدير البيانات',
+        importConfirm: 'استيراد البيانات سيؤدي إلى حذف جميع البيانات الحالية واستبدالها ببيانات الملف. هل تود الاستمرار؟',
+        importSuccess: 'تم استيراد البيانات بنجاح!',
+        importFailed: 'فشل الاستيراد. تأكد من أن الملف صالح.'
       }
     }
   }
@@ -219,7 +243,7 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
-    lng: 'en',
+    lng: 'ar',
     fallbackLng: 'en',
     interpolation: {
       escapeValue: false

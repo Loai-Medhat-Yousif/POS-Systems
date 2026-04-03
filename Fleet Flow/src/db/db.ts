@@ -5,7 +5,7 @@ export interface Driver {
   name: string;
   phone: string;
   vehicleType: string;
-  status: 'Available' | 'Busy';
+  status: 'available' | 'busy';
 }
 
 export interface Order {

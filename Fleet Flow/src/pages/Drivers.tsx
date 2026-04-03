@@ -32,8 +32,15 @@ import { Badge } from '@/components/ui/badge';
 import { Search, Plus, Edit, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
+// Define statuses once – labels are translation keys
+const DRIVER_STATUSES = [
+  { value: 'available', labelKey: 'drivers.available' },
+  { value: 'busy', labelKey: 'drivers.busy' }
+] as const;
+
 export default function Drivers() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === 'ar';
   const [search, setSearch] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingDriver, setEditingDriver] = useState<Driver | null>(null);
@@ -42,7 +49,7 @@ export default function Drivers() {
     name: '',
     phone: '',
     vehicleType: '',
-    status: 'Available' as 'Available' | 'Busy'
+    status: 'available' as 'available' | 'busy'
   });
 
   const drivers = useLiveQuery(
@@ -63,7 +70,7 @@ export default function Drivers() {
       });
     } else {
       setEditingDriver(null);
-      setFormData({ name: '', phone: '', vehicleType: '', status: 'Available' });
+      setFormData({ name: '', phone: '', vehicleType: '', status: 'available' });
     }
     setIsDialogOpen(true);
   };
@@ -83,15 +90,21 @@ export default function Drivers() {
       }
       setIsDialogOpen(false);
     } catch (error) {
-      toast.error('Error saving driver');
+      toast.error(t('common.errorSavingDriver'));
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm('Are you sure you want to delete this driver?')) {
+    if (confirm(t('common.deleteDriverConfirm'))) {
       await db.drivers.delete(id);
-      toast.success('Driver deleted');
+      toast.success(t('common.driverDeleted'));
     }
+  };
+
+  // Helper to get translated status label
+  const getStatusLabel = (status: string) => {
+    const found = DRIVER_STATUSES.find(s => s.value === status);
+    return found ? t(found.labelKey) : status;
   };
 
   return (
@@ -105,7 +118,7 @@ export default function Drivers() {
               {t('drivers.add')}
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent dir={isRTL ? 'rtl' : 'ltr'}>
             <DialogHeader>
               <DialogTitle>{editingDriver ? t('drivers.edit') : t('drivers.add')}</DialogTitle>
             </DialogHeader>
@@ -127,7 +140,7 @@ export default function Drivers() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>{t('drivers.vehicleType')}</Label>
+                <Label>{t('drivers.vehiclePlate')}</Label>
                 <Input
                   required
                   value={formData.vehicleType}
@@ -138,14 +151,19 @@ export default function Drivers() {
                 <Label>{t('drivers.status')}</Label>
                 <Select
                   value={formData.status}
-                  onValueChange={(value: 'Available' | 'Busy') => setFormData({ ...formData, status: value })}
+                  onValueChange={(value: 'available' | 'busy') => setFormData({ ...formData, status: value })}
                 >
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue>
+                      {getStatusLabel(formData.status)}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Available">{t('drivers.available')}</SelectItem>
-                    <SelectItem value="Busy">{t('drivers.busy')}</SelectItem>
+                    {DRIVER_STATUSES.map((status) => (
+                      <SelectItem key={status.value} value={status.value}>
+                        {t(status.labelKey)}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -181,9 +199,9 @@ export default function Drivers() {
               <TableRow>
                 <TableHead>{t('drivers.name')}</TableHead>
                 <TableHead>{t('drivers.phone')}</TableHead>
-                <TableHead>{t('drivers.vehicleType')}</TableHead>
+                <TableHead>{t('drivers.vehiclePlate')}</TableHead>
                 <TableHead>{t('drivers.status')}</TableHead>
-                <TableHead className="text-right">{t('common.actions')}</TableHead>
+                <TableHead className={isRTL ? 'text-left' : 'text-right'}>{t('common.actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -200,12 +218,14 @@ export default function Drivers() {
                     <TableCell>{driver.phone}</TableCell>
                     <TableCell>{driver.vehicleType}</TableCell>
                     <TableCell>
-                      <Badge variant={driver.status === 'Available' ? 'default' : 'secondary'}
-                             className={driver.status === 'Available' ? 'bg-green-500 hover:bg-green-600' : ''}>
-                        {driver.status === 'Available' ? t('drivers.available') : t('drivers.busy')}
+                      <Badge 
+                        variant={driver.status === 'available' ? 'default' : 'secondary'}
+                        className={driver.status === 'available' ? 'bg-green-500 hover:bg-green-600' : ''}
+                      >
+                        {getStatusLabel(driver.status)}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className={isRTL ? 'text-left' : 'text-right'}>
                       <Button variant="ghost" size="icon" onClick={() => handleOpenDialog(driver)}>
                         <Edit className="h-4 w-4" />
                       </Button>

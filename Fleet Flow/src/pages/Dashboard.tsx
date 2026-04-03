@@ -86,7 +86,7 @@ export default function Dashboard() {
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Export failed:", error);
-      alert("Failed to export data");
+      alert(t('common.exportFailed'));
     }
   };
 
@@ -95,9 +95,7 @@ export default function Dashboard() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const confirmOverwrite = window.confirm(
-      "Importing will delete all current data and replace it with the file data. Continue?"
-    );
+    const confirmOverwrite = window.confirm(t('common.importConfirm'));
     if (!confirmOverwrite) {
       event.target.value = ''; // Reset input
       return;
@@ -120,11 +118,11 @@ export default function Dashboard() {
           await db.orders.bulkAdd(json.orders);
         });
 
-        alert("Data imported successfully!");
+        alert(t('common.importSuccess'));
         window.location.reload(); // Refresh to update all hooks
       } catch (error) {
         console.error("Import failed:", error);
-        alert("Import failed. Ensure the file is a valid FleetFlow JSON backup.");
+        alert(t('common.importFailed'));
       }
     };
     reader.readAsText(file);
@@ -147,7 +145,7 @@ export default function Dashboard() {
       return sum + (order.cashCollected || (order.paymentType === 'Cash' ? order.deliveryFee : 0));
     }, 0);
 
-    const activeDrivers = await db.drivers.where('status').equals('Available').count();
+    const activeDrivers = await db.drivers.where('status').equals('available').count();
 
     return {
       totalOrders: todayOrders.length,

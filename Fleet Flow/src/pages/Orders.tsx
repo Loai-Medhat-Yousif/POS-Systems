@@ -67,9 +67,9 @@ export default function Orders() {
   };
 
   const driverStatusLabels: Record<string, string> = {
-    Available: t('drivers.available'),
-    Busy:      t('drivers.busy'),
-    Offline:   t('drivers.offline'),
+    available: t('drivers.available'),
+    busy:      t('drivers.busy'),
+    offline:   t('drivers.offline'),
   };
   // ────────────────────────────────────────────────────────────────────────────
 
@@ -143,7 +143,7 @@ export default function Orders() {
             .filter(o => o.id !== editingOrder.id && (o.status === 'Pending' || o.status === 'Assigned'))
             .count();
           if (otherActiveOrders === 0) {
-            await db.drivers.update(editingOrder.driverId, { status: 'Available' });
+            await db.drivers.update(editingOrder.driverId, { status: 'available' });
           }
         }
 
@@ -159,7 +159,7 @@ export default function Orders() {
       }
       setIsDialogOpen(false);
     } catch (error) {
-      toast.error('Error saving order');
+      toast.error(t('common.errorSavingOrder'));
     }
   };
 
@@ -178,7 +178,7 @@ export default function Orders() {
       });
 
       if (!isUnassigned) {
-        await db.drivers.update(selectedDriverId, { status: 'Busy' });
+        await db.drivers.update(selectedDriverId, { status: 'busy' });
       }
 
       if (previousDriverId && (isUnassigned || previousDriverId !== selectedDriverId)) {
@@ -188,21 +188,21 @@ export default function Orders() {
           .filter(o => o.id !== editingOrder.id && (o.status === 'Pending' || o.status === 'Assigned'))
           .count();
         if (otherActiveOrders === 0) {
-          await db.drivers.update(previousDriverId, { status: 'Available' });
+          await db.drivers.update(previousDriverId, { status: 'available' });
         }
       }
 
       toast.success(t('orders.assignDriver'));
       setIsAssignDialogOpen(false);
     } catch (error) {
-      toast.error('Error assigning driver');
+      toast.error(t('common.errorAssigningDriver'));
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm('Are you sure you want to delete this order?')) {
+    if (confirm(t('common.deleteOrderConfirm'))) {
       await db.orders.delete(id);
-      toast.success('Order deleted');
+      toast.success(t('common.orderDeleted'));
     }
   };
 
